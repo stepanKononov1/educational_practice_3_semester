@@ -1,10 +1,14 @@
-import tkinter as tk
-import GameLife
+import sys
+from PyQt5.QtWidgets import QApplication
+from GraphicBlock import GameLifeMainWindow
 
-root = tk.Tk()
-height = 600
-width = 600
-cell_size = 10
-root.geometry('{}x{}'.format(width, height))
-game = GameLife.GameOfLife(root, round(width // cell_size), round(height * 0.9 // cell_size), cell_size)
-root.mainloop()
+
+def start():
+    app = QApplication(sys.argv)
+    window = GameLifeMainWindow()
+    window.show()
+    sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
+    start()
