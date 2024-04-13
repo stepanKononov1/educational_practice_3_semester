@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QCursor
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene
+from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsView
 import MathBlock
 from config import matrix, matrix_width, matrix_height
 
@@ -8,48 +7,64 @@ from config import matrix, matrix_width, matrix_height
 class GameLifeMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Игра')
-        self.resize(1200, 800)
-
-        self.central_widget = QtWidgets.QWidget(self)
-        self.central_widget.setObjectName('central_widget')
-        self.setCentralWidget(self.central_widget)
-
-        self.menubar = QtWidgets.QMenuBar(self)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1200, 26))
-        self.menubar.setObjectName('menubar')
-
-        self.menu = QtWidgets.QMenu(self.menubar)
-        self.menu.setObjectName('menu')
-        self.setMenuBar(self.menubar)
-        self.menu.setTitle('Файл')
-
+        self.setObjectName("main_window")
+        self.resize(1160, 700)
+        self.centralwidget = QtWidgets.QWidget(self)
+        self.centralwidget.setObjectName("centralwidget")
+        self.gr_sc = QtWidgets.QGraphicsScene(self.centralwidget)
+        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
+        self.graphicsView.setGeometry(QtCore.QRect(290, 20, 850, 600))
+        self.graphicsView.setScene(self.gr_sc)
+        self.graphicsView.setObjectName("graphicsView")
+        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton.setGeometry(QtCore.QRect(30, 40, 201, 28))
+        self.pushButton.setStyleSheet("font: 8pt \"Arial\";")
+        self.pushButton.setObjectName("pushButton")
+        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_2.setGeometry(QtCore.QRect(30, 80, 201, 28))
+        self.pushButton_2.setStyleSheet("font: 8pt \"Arial\";")
+        self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_3.setGeometry(QtCore.QRect(30, 120, 201, 28))
+        self.pushButton_3.setStyleSheet("font: 8pt \"Arial\";")
+        self.pushButton_3.setObjectName("pushButton_3")
+        self.line = QtWidgets.QFrame(self.centralwidget)
+        self.line.setGeometry(QtCore.QRect(260, 9, 20, 621))
+        self.line.setFrameShape(QtWidgets.QFrame.VLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+        self.line_2 = QtWidgets.QFrame(self.centralwidget)
+        self.line_2.setGeometry(QtCore.QRect(0, 620, 1181, 20))
+        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setObjectName("line_2")
+        self.line_3 = QtWidgets.QFrame(self.centralwidget)
+        self.line_3.setGeometry(QtCore.QRect(0, 1, 1181, 20))
+        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setObjectName("line_3")
+        self.label_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_2.setGeometry(QtCore.QRect(40, 250, 81, 20))
+        self.label_2.setStyleSheet("font: 9pt \"Arial\";")
+        self.label_2.setObjectName("label_2")
+        self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
+        self.horizontalSlider.setGeometry(QtCore.QRect(30, 280, 201, 22))
+        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider.setObjectName("horizontalSlider")
+        self.label_3 = QtWidgets.QLabel(self.centralwidget)
+        self.label_3.setGeometry(QtCore.QRect(40, 180, 101, 20))
+        self.label_3.setStyleSheet("font: 9pt \"Arial\";")
+        self.label_3.setObjectName("label_3")
+        self.horizontalSlider_2 = QtWidgets.QSlider(self.centralwidget)
+        self.horizontalSlider_2.setGeometry(QtCore.QRect(30, 210, 201, 22))
+        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
+        self.horizontalSlider_2.setObjectName("horizontalSlider_2")
+        self.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(self)
-        self.statusbar.setObjectName('statusbar')
+        self.statusbar.setObjectName("statusbar")
         self.setStatusBar(self.statusbar)
-
-        self.save = QtWidgets.QAction(self)
-        self.save.setObjectName('save')
-        self.save.setText('Сохранить')
-        self.load = QtWidgets.QAction(self)
-        self.load.setObjectName('load')
-        self.load.setText('Загрузить')
-
-        self.menu.addAction(self.save)
-        self.menu.addAction(self.load)
-        self.menubar.addAction(self.menu.menuAction())
-
-
-class GameLifeGraphicScene(QGraphicsScene):
-    def __init__(self):
-        super().__init__()
-        self.__cursor = QtCore.pyqtSignal(int, int)
-        self.__math_block = MathBlock.MathCalc(matrix_height,
-                                               matrix_width,
-                                               matrix)
-
-    def mousePressEvent(self, e):
-        p = QCursor.pos()
-        self.__cursor.emit(p.x(), p.y())
-        e.accept()
-
+        self.pushButton.setText("Следующий шаг")
+        self.pushButton_2.setText("Пауза")
+        self.pushButton_3.setText("Предыдущий шаг")
+        self.label_2.setText("Скорость:")
+        self.label_3.setText("Размер кисти:")

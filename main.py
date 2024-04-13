@@ -1,13 +1,12 @@
-import sys
 from PyQt5.QtWidgets import QApplication
 from GraphicBlock import GameLifeMainWindow
 
 
 def start():
-    app = QApplication(sys.argv)
+    app = QApplication([])
     window = GameLifeMainWindow()
     window.show()
-    sys.exit(app.exec_())
+    app.exec_()
 
 
 if __name__ == "__main__":

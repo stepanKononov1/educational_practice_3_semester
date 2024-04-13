@@ -39,10 +39,10 @@ def get_next_matrix(height: int16, width: int16, matrix_to_check: np.array) -> n
 
             if not matrix_to_check[i, j]:
                 if count == 3:
-                    temp[i, j] = 1
+                    temp[i, j] = True
             else:
                 if count == (2 or 3):
-                    temp[i, j] = 1
+                    temp[i, j] = True
 
     return temp
 
