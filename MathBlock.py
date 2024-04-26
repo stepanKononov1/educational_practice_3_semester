@@ -1,30 +1,47 @@
-# from time import sleep
 import numpy as np
 from numba import njit, int16, int8
 
 
-class MathCalc:
+class MatrixCalculator:
     def __init__(self, height: int16, width: int16, matrix: np.array) -> None:
-        self.__height = height
-        self.__width = width
-        self.__matrix = matrix
+        self.__height = width
+        self.__width = height
+        self.__matrix = np.transpose(matrix)
         self.__stack_memory = []
 
-    def update(self) -> np.array:
+    def __update(self) -> np.array:
         temp = get_next_matrix(self.__height, self.__width, self.__matrix)
         self.__stack_memory.append(self.__matrix)
         self.__matrix = temp
         return self.__matrix
+    
+    def __get_matrix_without_border(self, matrix) -> np.array:
+        return get_trim_matrix(self.__height, self.__width, matrix)
 
-    def get_previous_matrix(self):
-        return self.__stack_memory.pop()
-
+    def __get_previous_matrix(self):
+        try:
+            stack_matrix = self.__stack_memory.pop()
+            self.__matrix = stack_matrix
+        except IndexError:
+            return np.zeros((self.__height, self.__width))
+        return stack_matrix
+    
     def set_matrix(self, matrix: np.array):
         self.__matrix = matrix
 
+    def do_single_update_interface(self):
+        return self.__get_matrix_without_border(self.__update())
+
+    def do_single_previous_interface(self):
+        return self.__get_matrix_without_border(self.__get_previous_matrix())
+
 
 @njit(fastmath=True,
-      locals={'count': int8}
+      locals={
+          'count': int8,
+          'i': int16,
+          'j': int16
+      }
       )
 def get_next_matrix(height: int16, width: int16, matrix_to_check: np.array) -> np.array:
     temp = np.zeros((height, width), dtype=np.bool_)
@@ -47,16 +64,15 @@ def get_next_matrix(height: int16, width: int16, matrix_to_check: np.array) -> n
     return temp
 
 
-# mat = np.array([
-#     [0, 0, 0, 0, 0],
-#     [0, 0, 1, 0, 0],
-#     [0, 0, 1, 0, 0],
-#     [0, 0, 1, 0, 0],
-#     [0, 0, 0, 0, 0],
-# ], dtype=np.bool_)
-#
-# math = MathCalc(5, 5, mat)
-#
-# while True:
-#     sleep(1)
-#     print(f'{math.update()}\n')
+@njit(fastmath=True,
+      locals={
+          'i': int16,
+          'j': int16
+      }
+      )
+def get_trim_matrix(height: int16, width: int16, matrix: np.array) -> np.array:
+    temp = np.zeros((height - 2, width - 2), dtype=np.bool_)
+    for i in range(1, height - 1):
+        for j in range(1, width - 1):
+            temp[i - 1][j - 1] = matrix[i][j]
+    return temp

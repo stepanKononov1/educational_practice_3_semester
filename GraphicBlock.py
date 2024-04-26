@@ -1,70 +1,81 @@
+import numpy as np
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QMainWindow, QGraphicsScene, QGraphicsRectItem, QGraphicsView
-import MathBlock
-from config import matrix, matrix_width, matrix_height
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtWidgets import QMainWindow, QLabel
+
+from MathBlock import MatrixCalculator
+import config as cfg
 
 
 class GameLifeMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setObjectName("main_window")
-        self.resize(1160, 700)
-        self.centralwidget = QtWidgets.QWidget(self)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gr_sc = QtWidgets.QGraphicsScene(self.centralwidget)
-        self.graphicsView = QtWidgets.QGraphicsView(self.centralwidget)
-        self.graphicsView.setGeometry(QtCore.QRect(290, 20, 850, 600))
-        self.graphicsView.setScene(self.gr_sc)
-        self.graphicsView.setObjectName("graphicsView")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setGeometry(QtCore.QRect(30, 40, 201, 28))
-        self.pushButton.setStyleSheet("font: 8pt \"Arial\";")
-        self.pushButton.setObjectName("pushButton")
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setGeometry(QtCore.QRect(30, 80, 201, 28))
-        self.pushButton_2.setStyleSheet("font: 8pt \"Arial\";")
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.pushButton_3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_3.setGeometry(QtCore.QRect(30, 120, 201, 28))
-        self.pushButton_3.setStyleSheet("font: 8pt \"Arial\";")
-        self.pushButton_3.setObjectName("pushButton_3")
-        self.line = QtWidgets.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(260, 9, 20, 621))
-        self.line.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line.setObjectName("line")
-        self.line_2 = QtWidgets.QFrame(self.centralwidget)
-        self.line_2.setGeometry(QtCore.QRect(0, 620, 1181, 20))
-        self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_2.setObjectName("line_2")
-        self.line_3 = QtWidgets.QFrame(self.centralwidget)
-        self.line_3.setGeometry(QtCore.QRect(0, 1, 1181, 20))
-        self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_3.setObjectName("line_3")
-        self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setGeometry(QtCore.QRect(40, 250, 81, 20))
-        self.label_2.setStyleSheet("font: 9pt \"Arial\";")
-        self.label_2.setObjectName("label_2")
-        self.horizontalSlider = QtWidgets.QSlider(self.centralwidget)
-        self.horizontalSlider.setGeometry(QtCore.QRect(30, 280, 201, 22))
-        self.horizontalSlider.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider.setObjectName("horizontalSlider")
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setGeometry(QtCore.QRect(40, 180, 101, 20))
-        self.label_3.setStyleSheet("font: 9pt \"Arial\";")
-        self.label_3.setObjectName("label_3")
-        self.horizontalSlider_2 = QtWidgets.QSlider(self.centralwidget)
-        self.horizontalSlider_2.setGeometry(QtCore.QRect(30, 210, 201, 22))
-        self.horizontalSlider_2.setOrientation(QtCore.Qt.Horizontal)
-        self.horizontalSlider_2.setObjectName("horizontalSlider_2")
-        self.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(self)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
-        self.pushButton.setText("Следующий шаг")
-        self.pushButton_2.setText("Пауза")
-        self.pushButton_3.setText("Предыдущий шаг")
-        self.label_2.setText("Скорость:")
-        self.label_3.setText("Размер кисти:")
+        self.resize(cfg.main_window_height, cfg.main_window_width)
+        self.central_widget = QtWidgets.QWidget(self)
+        self.central_widget.setObjectName("central_widget")
+        self.setCentralWidget(self.central_widget)
+        self.timer = QtCore.QTimer()
+
+        self.matrix_block = MatrixCalculator(cfg.matrix_height, cfg.matrix_width, cfg.init_matrix)
+
+        self.label_image = QLabel(self.central_widget)
+        self.label_image.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.label_image.setGeometry(QtCore.QRect(cfg.matrix_window_padding_x,
+                                                  cfg.matrix_window_padding_y,
+                                                  cfg.matrix_window_width,
+                                                  cfg.matrix_window_height))
+        self.label_image.setObjectName("label_image")
+        self.label_image.setPixmap(self.view())
+
+        self.button_next = QtWidgets.QPushButton(self.central_widget)
+        self.button_next.setGeometry(QtCore.QRect(30, 40, 201, 28))
+        self.button_next.setStyleSheet("font: 8pt \"Arial\";")
+        self.button_next.setObjectName("button_next")
+        self.button_next.setText("Следующий шаг")
+
+        self.button_pause = QtWidgets.QPushButton(self.central_widget)
+        self.button_pause.setGeometry(QtCore.QRect(30, 80, 201, 28))
+        self.button_pause.setStyleSheet("font: 8pt \"Arial\";")
+        self.button_pause.setObjectName("button_pause")
+        self.button_pause.setText("Запуск")
+
+        self.button_previous = QtWidgets.QPushButton(self.central_widget)
+        self.button_previous.setGeometry(QtCore.QRect(30, 120, 201, 28))
+        self.button_previous.setStyleSheet("font: 8pt \"Arial\";")
+        self.button_previous.setObjectName("button_previous")
+        self.button_previous.setText("Предыдущий шаг")
+
+        self.label_speed = QtWidgets.QLabel(self.central_widget)
+        self.label_speed.setGeometry(QtCore.QRect(40, 250, 81, 20))
+        self.label_speed.setStyleSheet("font: 9pt \"Arial\";")
+        self.label_speed.setObjectName("label_speed")
+        self.label_speed.setText("Скорость:")
+
+        self.slider_speed = QtWidgets.QSlider(self.central_widget)
+        self.slider_speed.setGeometry(QtCore.QRect(30, 280, 201, 22))
+        self.slider_speed.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.slider_speed.setObjectName("slider_speed")
+
+        self.label_brash = QtWidgets.QLabel(self.central_widget)
+        self.label_brash.setGeometry(QtCore.QRect(40, 180, 101, 20))
+        self.label_brash.setStyleSheet("font: 9pt \"Arial\";")
+        self.label_brash.setObjectName("label_brash")
+        self.label_brash.setText("Размер кисти:")
+
+        self.slider_brash = QtWidgets.QSlider(self.central_widget)
+        self.slider_brash.setGeometry(QtCore.QRect(30, 210, 201, 22))
+        self.slider_brash.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.slider_brash.setObjectName("slider_brash")
+
+    def view(self, prev: bool = False) -> QPixmap:
+        if not prev:
+            matrix = self.matrix_block.do_single_update_interface()
+        else:
+            matrix = self.matrix_block.do_single_previous_interface()
+        image_data = np.uint8(matrix) * 255
+        image = QImage(image_data.data, image_data.shape[1], image_data.shape[0], QImage.Format_Indexed8)
+        pixmap = QPixmap.fromImage(image)
+        return pixmap
+
