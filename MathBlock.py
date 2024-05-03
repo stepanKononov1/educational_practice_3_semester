@@ -1,13 +1,15 @@
 import numpy as np
 from numba import njit, int16, int8
 
+import config as cfg
+
 
 class MatrixCalculator:
-    def __init__(self, height: int16, width: int16, matrix: np.array) -> None:
-        self.__height = width
-        self.__width = height
-        self.__matrix = np.transpose(matrix)
-        self.__stack_memory = []
+    def __init__(self) -> None:
+        self.__height = cfg.matrix_height
+        self.__width = cfg.matrix_width
+        self.__matrix = cfg.init_matrix
+        self.__stack_memory = [cfg.init_matrix]
 
     def __update(self) -> np.array:
         temp = get_next_matrix(self.__height, self.__width, self.__matrix)
@@ -21,9 +23,9 @@ class MatrixCalculator:
     def __get_previous_matrix(self):
         try:
             stack_matrix = self.__stack_memory.pop()
-            self.__matrix = stack_matrix
         except IndexError:
-            return np.zeros((self.__height, self.__width))
+            stack_matrix = np.zeros((self.__height, self.__width), dtype=np.bool_)
+        self.__matrix = stack_matrix
         return stack_matrix
     
     def set_matrix(self, matrix: np.array):
@@ -58,8 +60,10 @@ def get_next_matrix(height: int16, width: int16, matrix_to_check: np.array) -> n
                 if count == 3:
                     temp[i, j] = True
             else:
-                if count == (2 or 3):
+                if count in (2, 3):
                     temp[i, j] = True
+                else:
+                    temp[i, j] = False
 
     return temp
 
