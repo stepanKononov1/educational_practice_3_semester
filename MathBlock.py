@@ -13,11 +13,14 @@ class MatrixCalculator:
 
     def __update(self) -> np.array:
         temp = get_next_matrix(self.__height, self.__width, self.__matrix)
+        self.__matrix = temp
+        self.update_stack()
+        return self.__matrix
+
+    def update_stack(self):
         self.__stack_memory.append(self.__matrix)
         if len(self.__stack_memory) > 100:
             self.__stack_memory.pop(0)
-        self.__matrix = temp
-        return self.__matrix
     
     def get_matrix_without_border(self, matrix) -> np.array:
         return get_trim_matrix(self.__height, self.__width, matrix)

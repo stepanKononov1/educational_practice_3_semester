@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import Qt
@@ -46,6 +48,13 @@ class GameLifeMainWindow(QMainWindow):
         self.button_previous.setText("Предыдущий шаг")
         self.button_previous.clicked.connect(self.button_previous_foo)
 
+        self.button_clear_screen = QtWidgets.QPushButton(self.central_widget)
+        self.button_clear_screen.setGeometry(QtCore.QRect(30, 330, 201, 28))
+        self.button_clear_screen.setStyleSheet("font: 8pt \"Arial\"; background-color: white;")
+        self.button_clear_screen.setObjectName("button_clear_screen")
+        self.button_clear_screen.setText("Очистить экран")
+        self.button_clear_screen.clicked.connect(self.button_clear_screen_foo)
+
         self.label_white_space = QLabel(self.central_widget)
         self.label_white_space.setGeometry(QtCore.QRect(20, 170, 221, 140))
         self.label_white_space.setStyleSheet("background-color: white;")
@@ -91,10 +100,18 @@ class GameLifeMainWindow(QMainWindow):
         if time < cfg.min_speed:
             time = cfg.min_speed
         self.matrix_label.timer.setInterval(time)
+    
+    def button_clear_screen_foo(self):
+        self.matrix_label.matrix_block.set_matrix(np.zeros((cfg.matrix_height, cfg.matrix_width)))
+        self.matrix_label.matrix_update(
+            self.matrix_label.matrix_block.get_matrix_without_border(
+                self.matrix_label.matrix_block.get_matrix()
+            )
+        )
 
     def on_brash_radius_event(self):
         brash_radius = self.slider_brash.value()
-        self.matrix_label.brash_radius = brash_radius // 100
+        self.matrix_label.brash_radius = brash_radius // cfg.brush_step
 
     def button_pause_foo(self):
         if self.matrix_label.timer.isActive():
@@ -108,11 +125,13 @@ class GameLifeMainWindow(QMainWindow):
 class MatrixLabel(QLabel):
     def __init__(self, parent: Qt.Widget):
         super().__init__(parent=parent)
-        self.__matrix_block = MatrixCalculator()
+        self.matrix_block = MatrixCalculator()
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.single_update)
-        self.brash_radius = 1
-        self.single_update()
+        self.brash_radius = cfg.min_size_brash
+        self.matrix_update(self.matrix_block.get_matrix_without_border(
+            self.matrix_block.get_matrix())
+        )
 
     def matrix_update(self, matrix: np.array):
         image_data = np.uint8(matrix) * 255
@@ -125,30 +144,37 @@ class MatrixLabel(QLabel):
 
     def single_update(self, prev: bool = False):
         if not prev:
-            matrix = self.__matrix_block.do_single_update_interface()
+            matrix = self.matrix_block.do_single_update_interface()
         else:
-            matrix = self.__matrix_block.do_single_previous_interface()
+            matrix = self.matrix_block.do_single_previous_interface()
         self.matrix_update(matrix)
 
-    def change_matrix(self, x: int, y: int):
+    def change_matrix_mouse_event(self, x: int, y: int):
         if x < 0 or y < 0:
             return
-        matrix = self.__matrix_block.get_matrix()
-        print(y, ' ', x)
+        matrix = self.matrix_block.get_matrix()
+        matrix_x, matrix_y = matrix.shape
         y = y // cfg.cell_size + 1
         x = x // cfg.cell_size + 1
-        if self.brash_radius == 1:
+        if self.brash_radius == 0:
             try:
                 matrix[y][x] = not matrix[y][x]
             except IndexError:
                 pass
         else:
-            pass
-        self.__matrix_block.set_matrix(matrix)
-        self.matrix_update(self.__matrix_block.get_matrix_without_border(matrix))
+            for i in range(y - self.brash_radius, y + self.brash_radius):
+                for j in range(x - self.brash_radius, x + self.brash_radius):
+                    if i > matrix_x or j > matrix_y or i < 0 or j < 0:
+                        continue
+                    try:
+                        matrix[i][j] = bool(random.getrandbits(1))
+                    except IndexError:
+                        pass
+        self.matrix_block.set_matrix(matrix)
+        self.matrix_update(self.matrix_block.get_matrix_without_border(matrix))
 
     def mousePressEvent(self, event):
-        self.change_matrix(event.pos().x(), event.pos().y())
+        self.change_matrix_mouse_event(event.pos().x(), event.pos().y())
 
     def mouseMoveEvent(self, event):
-        self.change_matrix(event.pos().x(), event.pos().y())
+        self.change_matrix_mouse_event(event.pos().x(), event.pos().y())

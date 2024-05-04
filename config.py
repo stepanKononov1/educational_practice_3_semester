@@ -3,7 +3,7 @@ import numpy as np
 # we can change this parameters
 main_window_height = 1200
 main_window_width = 600
-cell_size = 20
+cell_size = 1
 
 # but we CAN'T change anything under this line
 matrix_height = round(main_window_width * 0.7 * cell_size ** -1)
@@ -19,6 +19,6 @@ init_matrix = np.random.choice([True, False], size=(matrix_height, matrix_width)
 
 min_speed = 16
 max_speed = 1000
-min_size_brash = 100
-max_size_brash = 500
+min_size_brash = 0
+max_size_brash = 1000
 brush_step = 100
