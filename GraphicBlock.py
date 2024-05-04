@@ -11,7 +11,7 @@ import config as cfg
 class GameLifeMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.resize(cfg.main_window_height, cfg.main_window_width)
+        self.setFixedSize(QtCore.QSize(cfg.main_window_height, cfg.main_window_width))
         self.setStyleSheet("background-color: #e0e0e0; font: \"Times New Roman\";")
         self.setWindowTitle('игра "Жизнь"')
         self.central_widget = QtWidgets.QWidget(self)
@@ -63,6 +63,7 @@ class GameLifeMainWindow(QMainWindow):
         self.slider_brash.setObjectName("slider_brash")
         self.slider_brash.setMinimum(cfg.min_size_brash)
         self.slider_brash.setMaximum(cfg.max_size_brash)
+        self.slider_brash.valueChanged.connect(self.on_brash_radius_event)
 
         self.label_speed = QLabel(self.central_widget)
         self.label_speed.setGeometry(QtCore.QRect(30, 250, 81, 20))
@@ -80,16 +81,20 @@ class GameLifeMainWindow(QMainWindow):
         self.slider_speed.valueChanged.connect(self.on_change_speed_event)
 
     def button_next_foo(self):
-        self.matrix_label.view()
+        self.matrix_label.single_update()
 
     def button_previous_foo(self):
-        self.matrix_label.view(prev=True)
+        self.matrix_label.single_update(prev=True)
 
     def on_change_speed_event(self):
         time = abs(self.slider_speed.value() - cfg.max_speed)
         if time < cfg.min_speed:
             time = cfg.min_speed
         self.matrix_label.timer.setInterval(time)
+
+    def on_brash_radius_event(self):
+        brash_radius = self.slider_brash.value()
+        self.matrix_label.brash_radius = brash_radius // 100
 
     def button_pause_foo(self):
         if self.matrix_label.timer.isActive():
@@ -105,14 +110,11 @@ class MatrixLabel(QLabel):
         super().__init__(parent=parent)
         self.__matrix_block = MatrixCalculator()
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.view)
-        self.view()
+        self.timer.timeout.connect(self.single_update)
+        self.brash_radius = 1
+        self.single_update()
 
-    def view(self, prev: bool = False):
-        if not prev:
-            matrix = self.__matrix_block.do_single_update_interface()
-        else:
-            matrix = self.__matrix_block.do_single_previous_interface()
+    def matrix_update(self, matrix: np.array):
         image_data = np.uint8(matrix) * 255
         image = QImage(image_data.data, image_data.shape[1], image_data.shape[0], image_data.strides[0],
                        QImage.Format_Indexed8)
@@ -120,3 +122,33 @@ class MatrixLabel(QLabel):
                                                        cfg.matrix_window_width,
                                                        Qt.KeepAspectRatio,
                                                        Qt.FastTransformation))
+
+    def single_update(self, prev: bool = False):
+        if not prev:
+            matrix = self.__matrix_block.do_single_update_interface()
+        else:
+            matrix = self.__matrix_block.do_single_previous_interface()
+        self.matrix_update(matrix)
+
+    def change_matrix(self, x: int, y: int):
+        if x < 0 or y < 0:
+            return
+        matrix = self.__matrix_block.get_matrix()
+        print(y, ' ', x)
+        y = y // cfg.cell_size + 1
+        x = x // cfg.cell_size + 1
+        if self.brash_radius == 1:
+            try:
+                matrix[y][x] = not matrix[y][x]
+            except IndexError:
+                pass
+        else:
+            pass
+        self.__matrix_block.set_matrix(matrix)
+        self.matrix_update(self.__matrix_block.get_matrix_without_border(matrix))
+
+    def mousePressEvent(self, event):
+        self.change_matrix(event.pos().x(), event.pos().y())
+
+    def mouseMoveEvent(self, event):
+        self.change_matrix(event.pos().x(), event.pos().y())

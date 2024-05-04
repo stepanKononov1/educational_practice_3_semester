@@ -14,28 +14,33 @@ class MatrixCalculator:
     def __update(self) -> np.array:
         temp = get_next_matrix(self.__height, self.__width, self.__matrix)
         self.__stack_memory.append(self.__matrix)
+        if len(self.__stack_memory) > 100:
+            self.__stack_memory.pop(0)
         self.__matrix = temp
         return self.__matrix
     
-    def __get_matrix_without_border(self, matrix) -> np.array:
+    def get_matrix_without_border(self, matrix) -> np.array:
         return get_trim_matrix(self.__height, self.__width, matrix)
 
     def __get_previous_matrix(self):
         try:
             stack_matrix = self.__stack_memory.pop()
         except IndexError:
-            stack_matrix = np.zeros((self.__height, self.__width), dtype=np.bool_)
+            stack_matrix = self.__matrix
         self.__matrix = stack_matrix
         return stack_matrix
     
     def set_matrix(self, matrix: np.array):
         self.__matrix = matrix
 
+    def get_matrix(self):
+        return self.__matrix
+
     def do_single_update_interface(self):
-        return self.__get_matrix_without_border(self.__update())
+        return self.get_matrix_without_border(self.__update())
 
     def do_single_previous_interface(self):
-        return self.__get_matrix_without_border(self.__get_previous_matrix())
+        return self.get_matrix_without_border(self.__get_previous_matrix())
 
 
 @njit(fastmath=True,

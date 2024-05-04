@@ -3,11 +3,11 @@ import numpy as np
 # we can change this parameters
 main_window_height = 1200
 main_window_width = 600
-cell_size = 5
+cell_size = 20
 
 # but we CAN'T change anything under this line
-matrix_height = round(main_window_width * 2 / (3 * cell_size))
-matrix_width = round(main_window_height * 2 / (3 * cell_size))
+matrix_height = round(main_window_width * 0.7 * cell_size ** -1)
+matrix_width = round(main_window_height * 0.7 * cell_size ** -1)
 
 matrix_window_padding_x = 300
 matrix_window_padding_y = 40
