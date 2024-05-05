@@ -102,6 +102,8 @@ class GameLifeMainWindow(QMainWindow):
         self.matrix_label.timer.setInterval(time)
     
     def button_clear_screen_foo(self):
+        self.matrix_label.timer.stop()
+        self.button_pause.setText('Запуск')
         self.matrix_label.matrix_block.set_matrix(np.zeros((cfg.matrix_height, cfg.matrix_width), dtype=np.bool_))
         self.matrix_label.matrix_update(
             self.matrix_label.matrix_block.get_matrix_without_border(
@@ -137,7 +139,6 @@ class MatrixLabel(QLabel):
         image_data = np.uint8(matrix) * 255
         image = QImage(image_data.data, image_data.shape[1], image_data.shape[0], image_data.strides[0],
                        QImage.Format_Indexed8)
-        print(self.matrix_block.get_matrix())
         self.setPixmap(QPixmap.fromImage(image).scaled(cfg.matrix_window_height,
                                                        cfg.matrix_window_width,
                                                        Qt.KeepAspectRatio,
