@@ -15,7 +15,13 @@ matrix_window_padding_y = 40
 matrix_window_height = matrix_width * cell_size
 matrix_window_width = matrix_height * cell_size
 
-init_matrix = np.random.choice([True, False], size=(matrix_height, matrix_width))
+matrix = np.random.choice([True, False], size=(matrix_height - 1, matrix_width - 1))
+
+init_matrix = np.zeros((matrix_height, matrix_width), dtype=np.bool_)
+
+for i in range(1, matrix_height - 1):
+    for j in range(1, matrix_width - 1):
+        init_matrix[i][j] = matrix[i][j]
 
 min_speed = 16
 max_speed = 1000

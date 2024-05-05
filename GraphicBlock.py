@@ -102,7 +102,7 @@ class GameLifeMainWindow(QMainWindow):
         self.matrix_label.timer.setInterval(time)
     
     def button_clear_screen_foo(self):
-        self.matrix_label.matrix_block.set_matrix(np.zeros((cfg.matrix_height, cfg.matrix_width)))
+        self.matrix_label.matrix_block.set_matrix(np.zeros((cfg.matrix_height, cfg.matrix_width), dtype=np.bool_))
         self.matrix_label.matrix_update(
             self.matrix_label.matrix_block.get_matrix_without_border(
                 self.matrix_label.matrix_block.get_matrix()
@@ -137,6 +137,7 @@ class MatrixLabel(QLabel):
         image_data = np.uint8(matrix) * 255
         image = QImage(image_data.data, image_data.shape[1], image_data.shape[0], image_data.strides[0],
                        QImage.Format_Indexed8)
+        print(self.matrix_block.get_matrix())
         self.setPixmap(QPixmap.fromImage(image).scaled(cfg.matrix_window_height,
                                                        cfg.matrix_window_width,
                                                        Qt.KeepAspectRatio,
@@ -164,7 +165,7 @@ class MatrixLabel(QLabel):
         else:
             for i in range(y - self.brash_radius, y + self.brash_radius):
                 for j in range(x - self.brash_radius, x + self.brash_radius):
-                    if i > matrix_x or j > matrix_y or i < 0 or j < 0:
+                    if i > matrix_x - 2 or j > matrix_y - 2 or i < 1 or j < 1:
                         continue
                     try:
                         matrix[i][j] = bool(random.getrandbits(1))
