@@ -94,6 +94,8 @@ class GameLifeMainWindow(QMainWindow):
 
     def button_previous_foo(self):
         self.matrix_label.single_update(prev=True)
+        self.matrix_label.timer.stop()
+        self.button_pause.setText('Запуск')
 
     def on_change_speed_event(self):
         time = abs(self.slider_speed.value() - cfg.max_speed)
