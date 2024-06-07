@@ -18,7 +18,8 @@ class MatrixCalculator:
         return self.__matrix
 
     def update_stack(self):
-        self.__stack_memory.append(self.__matrix)
+        if not np.allclose(self.__matrix, np.zeros((self.__height, self.__width), dtype=np.bool_)):
+            self.__stack_memory.append(self.__matrix)
         if len(self.__stack_memory) > 100:
             self.__stack_memory.pop(0)
     
